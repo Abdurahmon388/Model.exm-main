@@ -15,6 +15,9 @@ from rest_framework import viewsets
 from django.db.models import Count
 from django.utils.dateparse import parse_date
 from rest_framework.decorators import api_view
+from django.http import JsonResponse
+from django.views import View
+
 
 
 class PhoneSendOTP(APIView):
@@ -48,35 +51,30 @@ def send_otp(phone):
     else:
         return False
 
+class StatisticsView(APIView):
+    def get(self, request):
+        date1 = request.GET.get('date1')
+        date2 = request.GET.get('date2')
 
-@api_view(['GET'])
-def course_statistics(request):
-    date1 = request.GET.get('date1')
-    date2 = request.GET.get('date2')
+        if not date1 or not date2:
+            return Response({"error": "date1 va date2 parametrlari kerak"}, status=400)
 
-    # Sana formatini tekshirish
-    if not date1 or not date2:
-        return Response({"error": "date1 va date2 parametrlari kerak"}, status=400)
+        date1 = parse_date(date1)
+        date2 = parse_date(date2)
 
-    date1 = parse_date(date1)
-    date2 = parse_date(date2)
-    
-    if not date1 or not date2:
-        return Response({"error": "Sana noto‘g‘ri formatda"}, status=400)
+        if not date1 or not date2:
+            return Response({"error": "Noto‘g‘ri sana formati"}, status=400)
 
-    # Statistikani chiqarish
-    stats = (
-        Enrollment.objects.filter(date_joined__range=[date1, date2])
-        .values("course__title") 
-        .annotate(
-            registered_count=Count("id", filter=models.Q(status="registered")),
-            studying_count=Count("id", filter=models.Q(status="studying")),
-            graduated_count=Count("id", filter=models.Q(status="graduated")),
-        )
-    )
+        data = {
+            "registered": Enrollment.objects.filter(status='registered', date_joined__range=[date1, date2]).count(),
+            "studying": Enrollment.objects.filter(status='studying', date_joined__range=[date1, date2]).count(),
+            "graduated": Enrollment.objects.filter(status='graduated', date_joined__range=[date1, date2]).count(),
+        }
+        return Response(data)
 
-    return Response(stats)
-
+class EnrollmentUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Enrollment.objects.all()
+    serializer_class = EnrollmentSerializer
 
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
@@ -295,7 +293,6 @@ class WorkerApiView(APIView):
 
 class StudentApiView(APIView):
     pagination_class = PageNumberPagination
-
     @swagger_auto_schema(request_body=StudentSerializer)
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
@@ -322,7 +319,6 @@ class StudentApiView(APIView):
             "courses": serializer_course.data
         }
         return Response(data=data)
-
 
 class StudentApiViewId(APIView):
     def get(self, request, pk):
@@ -360,7 +356,6 @@ class GroupApiView(ModelViewSet):
 
 class GroupApi(APIView):
     pagination_class = PageNumberPagination
-
     def get(self, request):
         teachers = Worker.objects.filter(user__is_teacher=True).order_by('-id')
         courses = Course.objects.all().order_by('-id')

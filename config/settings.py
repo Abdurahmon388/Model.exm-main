@@ -33,29 +33,29 @@ INSTALLED_APPS = [
     
     # app
     'configApp',
+    'app_name',
     
     # drf
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
 
-    "corsheaders",
     'drf_yasg',
-  
 ]
 
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    "configApp.middleware.CustomCorsMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True 
 
 ROOT_URLCONF = 'config.urls'
 

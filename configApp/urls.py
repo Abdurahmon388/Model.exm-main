@@ -2,7 +2,6 @@ from django.urls import path, include
 from .views import *
 from rest_framework.routers import DefaultRouter
 from configApp.views import CourseApiView
-from .views import course_statistics
 
 
 router = DefaultRouter()
@@ -24,8 +23,9 @@ router.register(r'course', CourseApiView, basename='unique_course')
 urlpatterns = [
     path('', include(router.urls)),
     path('userApi/', RegisterUserApi.as_view()),
-    path('statistics/', course_statistics, name='course_statistics'),
-
+    path("statistics/", StatisticsView.as_view(), name="api_statistics_list"),
+    path("enrollment/<int:pk>/", EnrollmentUpdateDeleteView.as_view(), name="enrollment_update_delete"),
+        
     path('refresh_password/', ChangePasswordView.as_view()),
     path('sentOTP/', PhoneSendOTP.as_view()),
     path('sentOTP_and_phone/', VerifySms.as_view()),

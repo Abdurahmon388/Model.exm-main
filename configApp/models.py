@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import RegexValidator
+from django.contrib.auth.models import User
+
 
 class UserManager(BaseUserManager):
     
@@ -54,7 +56,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return self.is_admin
 
-
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     departments = models.ManyToManyField('Departments', related_name='teachers')
@@ -67,21 +68,26 @@ class Teacher(models.Model):
         return self.user.phone
 
 class Course(models.Model):
+    name = models.CharField(max_length=255, unique=True)
     title = models.CharField(max_length=50)
     descriptions = models.CharField(max_length=500, null=True, blank=True)
 
     def __str__(self):
         return self.title
 
-
-class Enrollment(models.Model):  # app_statistics o‘rniga
+class Enrollment(models.Model):
+    STATUS_CHOICES = (
+        ('registered', 'Registered'),
+        ('studying', 'Studying'),
+        ('graduated', 'Graduated'),
+    )
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10)  # "registered", "studying", "graduated"
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     date_joined = models.DateField()
 
     def __str__(self):
-        return f"{self.student} - {self.course} ({self.status})"   
+        return f"{self.student} - {self.course} ({self.status})"
 
 class Worker(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

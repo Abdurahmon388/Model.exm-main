@@ -12,6 +12,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'phone','password', "full_name", 'is_active', 'is_staff', "is_teacher",'is_admin', 'is_student')
 
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ['id', 'name', 'title', 'descriptions']
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'student', 'course', 'status', 'date_joined']
+
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Teacher
@@ -53,11 +63,6 @@ class HomeWorkSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomeWork
         fields = ['id', 'groupHomeWork', 'price', 'student','link', 'is_active', 'descriptions']
-
-class CourseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Course
-        fields = ['id', 'title', 'descriptions']
 
 class DepartmentsSerializer(serializers.ModelSerializer):
     class Meta:
